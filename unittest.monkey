@@ -58,10 +58,16 @@ Class UnitTestApp Extends App
 		
 		if (Self._currentTest.Run()) Then
 			completedTest = New CompletedUnitTest(Self._currentTest, CompletedUnitTest.SUCCESS)
-			Print(Self._currentTest.GetName()+" unit test... SUCCESS")
+			
+			#IF (TARGET <> "flash")
+				Print(Self._currentTest.GetName()+" unit test... SUCCESS")
+			#EndIf
 		Else
 			completedTest = New CompletedUnitTest(Self._currentTest, CompletedUnitTest.FAILURE)
-			Print(Self._currentTest.GetName()+" unit test... FAILURE")
+			
+			#IF (TARGET <> "flash")
+				Print(Self._currentTest.GetName()+" unit test... FAILURE")
+			#EndIf
 			Self._countFailedTests+=1
 		End If 
 		
@@ -75,13 +81,15 @@ Class UnitTestApp Extends App
 		Cls(0, 0, 0)
 		
 		Local offsetY:Int = 5
-		For Local completed:CompletedUnitTest = EachIn Self._completedTests
+		Local scrollY:Int = Min(0.0, 12*(Ceil(DeviceHeight()/12) - (Self._completedTests.Count()+5)) + 8)
+		
+		For Local completed:CompletedUnitTest = EachIn Self._completedTests		
 			If (completed.status = CompletedUnitTest.SUCCESS) Then
 				SetColor(0,255,0)
-				DrawText(completed.test.GetName()+" unit test... SUCCESS", 5, offsetY)
+				DrawText(completed.test.GetName()+" unit test... SUCCESS", 5, offsetY + scrollY)
 			Else
 				SetColor(255,0,0)
-				DrawText(completed.test.GetName()+" unit test... FAILURE", 5, offsetY)
+				DrawText(completed.test.GetName()+" unit test... FAILURE", 5, offsetY + scrollY)
 			End If			
 			
 			offsetY+=12	
@@ -94,15 +102,17 @@ Class UnitTestApp Extends App
 				SetColor(0,255,0)		
 			End If
 			
-			DrawText("---", 5, offsetY)
+			DrawText("---", 5, offsetY + scrollY)
 			
 			offsetY+=12	
-			DrawText(Self.GetName()+" unit testing complete.", 5, offsetY)
+			DrawText(Self.GetName()+" unit testing complete.", 5, offsetY + scrollY)
 				
 			offsetY+=12	
 			DrawText("Total tests: "+Self._countTests+
 				", successful tests: "+(Self._countTests-Self._countFailedTests)+
-				", failed tests: "+Self._countFailedTests, 5, offsetY)
+				", failed tests: "+Self._countFailedTests, 5, offsetY + scrollY)
+				
+			Error("")
 		End If
 		
 		SetColor(255, 255, 255)
@@ -235,7 +245,7 @@ Private
 	End Function
 	
 	Function _ErrorFormatEqualF:String(expected:Float, actual:Float, delta:Float, message:String)
-		Return _ErrorFormat(message) + "expected:<"+expected+"> with delat:<"+delta+"> but was:<"+actual+">"
+		Return _ErrorFormat(message) + "expected:<"+expected+"> with delta:<"+delta+"> but was:<"+actual+">"
 	End Function
 	
 	Function _ErrorFormatEqualS:String(expected:String, actual:String, message:String)
